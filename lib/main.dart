@@ -30,14 +30,14 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   // All journals
-  List<Map<String, dynamic>> _journals = [];
+  List<Map<String, dynamic>> _listnoted = [];
 
   bool _isLoading = true;
   // This function is used to fetch all data from the database
-  void _refreshJournals() async {
+  void _refreshDatabase() async {
     final data = await SQLHelper.getItems();
     setState(() {
-      _journals = data;
+      _listnoted = data;
       _isLoading = false;
     });
   }
@@ -45,7 +45,7 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    _refreshJournals(); // Loading the diary when the app starts
+    _refreshDatabase(); // Loading the diary when the app starts
   }
 
   final TextEditingController _titleController = TextEditingController();
@@ -58,7 +58,7 @@ class _HomePageState extends State<HomePage> {
       // id == null -> create new item
       // id != null -> update an existing item
       final existingJournal =
-          _journals.firstWhere((element) => element['id'] == id);
+          _listnoted.firstWhere((element) => element['id'] == id);
       _titleController.text = existingJournal['title'];
       _descriptionController.text = existingJournal['description'];
     }
@@ -122,23 +122,23 @@ class _HomePageState extends State<HomePage> {
   Future<void> _addItem() async {
     await SQLHelper.createItem(
         _titleController.text, _descriptionController.text);
-    _refreshJournals();
+    _refreshDatabase();
   }
 
   // Update an existing journal
   Future<void> _updateItem(int id) async {
     await SQLHelper.updateItem(
         id, _titleController.text, _descriptionController.text);
-    _refreshJournals();
+    _refreshDatabase();
   }
 
   // Delete an item
   void _deleteItem(int id) async {
     await SQLHelper.deleteItem(id);
     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-      content: Text('Successfully deleted a journal!'),
+      content: Text('Successfully deleted!'),
     ));
-    _refreshJournals();
+    _refreshDatabase();
   }
 
   @override
@@ -152,25 +152,25 @@ class _HomePageState extends State<HomePage> {
               child: CircularProgressIndicator(),
             )
           : ListView.builder(
-              itemCount: _journals.length,
+              itemCount: _listnoted.length,
               itemBuilder: (context, index) => Card(
                 color: Colors.orange[200],
                 margin: const EdgeInsets.all(15),
                 child: ListTile(
-                    title: Text(_journals[index]['title']),
-                    subtitle: Text(_journals[index]['description']),
+                    title: Text(_listnoted[index]['title']),
+                    subtitle: Text(_listnoted[index]['description']),
                     trailing: SizedBox(
                       width: 100,
                       child: Row(
                         children: [
                           IconButton(
                             icon: const Icon(Icons.edit),
-                            onPressed: () => _showForm(_journals[index]['id']),
+                            onPressed: () => _showForm(_listnoted[index]['id']),
                           ),
                           IconButton(
                             icon: const Icon(Icons.delete),
                             onPressed: () =>
-                                _deleteItem(_journals[index]['id']),
+                                _deleteItem(_listnoted[index]['id']),
                           ),
                         ],
                       ),
